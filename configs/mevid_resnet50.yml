@@ -1,0 +1,22 @@
+_BASE_: "Base-bagtricks.yml"
+
+DATASETS:
+  NAMES: ("MEVID",)
+  TESTS: ("MEVID",)
+  ROOT_DIR: "data"
+
+MODEL:
+  BACKBONE:
+    NAME: "build_resnet_backbone"
+    DEPTH: "50x"
+    WITH_IBN: true
+    PRETRAIN_PATH: ""
+  HEADS:
+    EMBEDDING_DIM: 0
+
+SOLVER:
+  MAX_EPOCH: 60
+  BASE_LR: 0.00035
+  IMS_PER_BATCH: 64
+
+OUTPUT_DIR: "results/resnet50"

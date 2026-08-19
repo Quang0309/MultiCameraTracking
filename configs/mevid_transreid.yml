@@ -1,0 +1,27 @@
+_BASE_: "Base-bagtricks.yml"
+
+DATASETS:
+  NAMES: ("MEVID",)
+  TESTS: ("MEVID",)
+  ROOT_DIR: "data"
+
+MODEL:
+  BACKBONE:
+    NAME: "build_vit_backbone"
+    DEPTH: "base"
+    STRIDE_SIZE: [12, 12]
+    SIE_COE: 3.0
+    DROP_PATH: 0.1
+    PRETRAIN_PATH: ""
+  HEADS:
+    EMBEDDING_DIM: 768
+
+SOLVER:
+  MAX_EPOCH: 120
+  BASE_LR: 0.008
+  OPT: "SGD"
+  MOMENTUM: 0.9
+  IMS_PER_BATCH: 64
+  WARMUP_ITERS: 5000
+
+OUTPUT_DIR: "results/transreid"

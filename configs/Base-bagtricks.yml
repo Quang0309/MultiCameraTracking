@@ -1,0 +1,57 @@
+MODEL:
+  BACKBONE:
+    PRETRAIN: true
+    PRETRAIN_PATH: ''
+  HEADS:
+    NAME: "EmbeddingHead"
+    NORM: "BN"
+    POOL_LAYER: "GeneralizedMeanPoolingP"
+  LOSSES:
+    NAME: ("CrossEntropyLoss", "TripletLoss")
+    CE:
+      EPSILON: 0.1
+      SCALE: 1.0
+    TRI:
+      MARGIN: 0.3
+      HARD_MINING: true
+      SCALE: 1.0
+
+INPUT:
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST: [256, 128]
+  REA:
+    ENABLED: true
+    PROB: 0.5
+  FLIP:
+    ENABLED: true
+    PROB: 0.5
+  PADDING:
+    ENABLED: true
+    SIZE: 10
+
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 4
+  SAMPLER: "TrainTripletSampler"
+
+SOLVER:
+  OPT: "Adam"
+  BASE_LR: 0.00035
+  WEIGHT_DECAY: 0.0005
+  WEIGHT_DECAY_BIAS: 0.0005
+  IMS_PER_BATCH: 64
+  MAX_EPOCH: 60
+  WARMUP_ITERS: 2000
+  WARMUP_METHOD: "linear"
+  CHECKPOINT_PERIOD: 10
+  LOG_PERIOD: 50
+  EVAL_PERIOD: 10
+
+TEST:
+  EVAL_PERIOD: 10
+  IMS_PER_BATCH: 128
+  METRIC: "cosine"
+  RERANK:
+    ENABLED: false
+
+OUTPUT_DIR: "results"

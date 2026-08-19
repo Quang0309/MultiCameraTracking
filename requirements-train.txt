@@ -1,0 +1,5 @@
+-r requirements.txt
+tensorboard>=2.14.0
+yacs>=0.1.8
+gdown>=4.7.1
+timm>=0.9.0
