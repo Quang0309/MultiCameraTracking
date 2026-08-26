@@ -15,6 +15,9 @@ except ImportError:
 from fastreid.config import get_cfg
 from fastreid.engine import default_argument_parser, default_setup, launch, DefaultTrainer
 
+# Import our custom dataset to trigger Fast-ReID registration
+from src.data.mevid_dataset import MEVID
+
 def setup(args):
     """
     Create configs and perform basic setups.

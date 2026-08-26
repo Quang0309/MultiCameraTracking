@@ -2,13 +2,43 @@
 
 # Download script for MEVID dataset
 
-# Set project root and target directory
+# Set project root
 PROJECT_ROOT=$(dirname "$(dirname "$(readlink -f "$0" 2>/dev/null || realpath "$0")")")
 if [ -z "$PROJECT_ROOT" ]; then
     PROJECT_ROOT=$(pwd) # Fallback if realpath is not available
 fi
-TARGET_DIR="$PROJECT_ROOT/data/mevid"
+
+# Auto-detect Google Drive across different environments, or use provided argument
+if [ ! -z "$1" ]; then
+    TARGET_DIR="$1"
+elif [ -d "/content/drive/MyDrive" ]; then
+    # Google Colab environment
+    TARGET_DIR="/content/drive/MyDrive/mevid"
+else
+    # Try to find Google Drive on macOS natively
+    MAC_GDRIVE=$(ls -d "$HOME/Library/CloudStorage"/GoogleDrive-*/"My Drive" 2>/dev/null | head -n 1)
+    if [ ! -z "$MAC_GDRIVE" ] && [ -d "$MAC_GDRIVE" ]; then
+        TARGET_DIR="$MAC_GDRIVE/mevid"
+    elif [ -d "/Volumes/GoogleDrive/My Drive" ]; then
+        TARGET_DIR="/Volumes/GoogleDrive/My Drive/mevid"
+    elif [ -d "/g/My Drive" ]; then
+        TARGET_DIR="/g/My Drive/mevid" # Windows Git Bash common path
+    else
+        echo "Could not auto-detect Google Drive. Defaulting to local directory."
+        TARGET_DIR="$PROJECT_ROOT/data/mevid"
+    fi
+fi
+
+echo "Using target directory: $TARGET_DIR"
 mkdir -p "$TARGET_DIR"
+
+# Create a symlink in the project root so local code still works seamlessly
+if [ "$TARGET_DIR" != "$PROJECT_ROOT/data/mevid" ]; then
+    rm -rf "$PROJECT_ROOT/data/mevid" 2>/dev/null
+    mkdir -p "$PROJECT_ROOT/data"
+    ln -s "$TARGET_DIR" "$PROJECT_ROOT/data/mevid"
+    echo "Created symlink: $PROJECT_ROOT/data/mevid -> $TARGET_DIR"
+fi
 
 # URLs
 URL_ANNOTATIONS="https://mevadata-public-01.s3.amazonaws.com/mevid-annotations/mevid-v1-annotation-data.zip"
