@@ -86,7 +86,7 @@ class MEVID(ImageDataset):
             if len(parts) != 5:
                 continue
             
-            start_idx, end_idx, pid, outfit_id, camid = map(int, parts)
+            start_idx, end_idx, pid, outfit_id, camid = [int(float(x)) for x in parts]
             
             if pid not in self.pid_map:
                 self.pid_map[pid] = pid_counter
@@ -112,7 +112,7 @@ class MEVID(ImageDataset):
             if len(parts) != 5:
                 continue
             
-            start_idx, end_idx, pid, outfit_id, camid = map(int, parts)
+            start_idx, end_idx, pid, outfit_id, camid = [int(float(x)) for x in parts]
 
             tracklet_samples = []
             for i in range(start_idx, end_idx + 1):
