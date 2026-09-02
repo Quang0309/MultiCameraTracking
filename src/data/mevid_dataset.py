@@ -105,7 +105,7 @@ class MEVID(ImageDataset):
     def _process_test_info(self, info_path: Path, query_path: Path, img_names: List[str]) -> None:
         lines = self._read_lines(info_path)
         query_indices_str = self._read_lines(query_path)
-        query_indices = set(int(idx) for idx in query_indices_str)
+        query_indices = set(int(float(idx)) for idx in query_indices_str)
 
         for row_idx, line in enumerate(lines):
             parts = line.split()
