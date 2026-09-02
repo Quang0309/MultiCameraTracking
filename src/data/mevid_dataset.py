@@ -138,3 +138,51 @@ class MEVID(ImageDataset):
 
 # Legacy alias for the rest of the pipeline
 MEVIDDataset = MEVID
+
+@register_mevid()
+class MEVID_Sample(MEVID):
+    """A tiny subset of MEVID for quickly testing the training loop."""
+    def _load_dataset(self) -> None:
+        super()._load_dataset()
+        
+        logger.info("Shrinking dataset for MEVID_Sample dry run...")
+        
+        # 1. Shrink Training (Keep exactly 10 identities, up to 20 images each)
+        train_dict = {}
+        for item in self.train_data:
+            pid = item[1]
+            if pid not in train_dict:
+                train_dict[pid] = []
+            if len(train_dict[pid]) < 20:
+                train_dict[pid].append(item)
+                
+        tiny_train = []
+        for pid in list(train_dict.keys())[:10]:
+            tiny_train.extend(train_dict[pid])
+        self.train_data = tiny_train
+
+        # 2. Shrink Testing (Keep 5 identities)
+        query_dict = {}
+        for item in self.query_data:
+            pid = item[1]
+            if pid not in query_dict:
+                query_dict[pid] = []
+            if len(query_dict[pid]) < 5:
+                query_dict[pid].append(item)
+                
+        tiny_query = []
+        sample_test_pids = list(query_dict.keys())[:5]
+        for pid in sample_test_pids:
+            tiny_query.extend(query_dict[pid])
+        self.query_data = tiny_query
+        
+        # Keep gallery matches for those 5 test identities
+        self.gallery_data = [x for x in self.gallery_data if x[1] in sample_test_pids][:200]
+        
+        if HAS_FASTREID:
+            self.train = self.train_data
+            self.query = self.query_data
+            self.gallery = self.gallery_data
+            
+        logger.info(f"Sample loaded: {len(self.train_data)} train, {len(self.query_data)} query, {len(self.gallery_data)} gallery")
+
