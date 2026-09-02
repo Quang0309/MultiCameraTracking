@@ -1,4 +1,4 @@
-data/
+/data/
 weights/
 results/
 __pycache__/

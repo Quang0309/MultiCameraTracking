@@ -5,6 +5,10 @@ Training entrypoint script for ReID models.
 import argparse
 import logging
 import sys
+import collections
+import collections.abc
+collections.Mapping = collections.abc.Mapping
+collections.Iterable = collections.abc.Iterable
 
 try:
     import fastreid
