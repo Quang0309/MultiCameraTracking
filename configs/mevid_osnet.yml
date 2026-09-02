@@ -3,7 +3,6 @@ _BASE_: "Base-bagtricks.yml"
 DATASETS:
   NAMES: ("MEVID",)
   TESTS: ("MEVID",)
-  ROOT_DIR: "data"
 
 MODEL:
   BACKBONE:
