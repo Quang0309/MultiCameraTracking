@@ -179,10 +179,7 @@ class MEVID_Sample(MEVID):
         # Keep gallery matches for those 5 test identities
         self.gallery_data = [x for x in self.gallery_data if x[1] in sample_test_pids][:200]
         
-        if HAS_FASTREID:
-            self.train = self.train_data
-            self.query = self.query_data
-            self.gallery = self.gallery_data
+
             
         logger.info(f"Sample loaded: {len(self.train_data)} train, {len(self.query_data)} query, {len(self.gallery_data)} gallery")
 
