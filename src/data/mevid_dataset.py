@@ -100,7 +100,7 @@ class MEVID(ImageDataset):
                 
                 img_name = img_names[idx]
                 img_path = str(self.train_dir / img_name)
-                self.train_data.append((img_path, mapped_pid, camid, outfit_id))
+                self.train_data.append((img_path, mapped_pid, camid))
 
     def _process_test_info(self, info_path: Path, query_path: Path, img_names: List[str]) -> None:
         lines = self._read_lines(info_path)
@@ -133,7 +133,7 @@ class MEVID(ImageDataset):
         return len(self.pid_map)
 
     def get_num_cams(self) -> int:
-        cams = set(camid for _, _, camid, _ in self.train_data)
+        cams = set(item[2] for item in self.train_data)
         return len(cams)
 
 # Legacy alias for the rest of the pipeline
