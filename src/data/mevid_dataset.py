@@ -100,6 +100,7 @@ class MEVID(ImageDataset):
                 
                 img_name = img_names[idx]
                 img_path = str(self.train_dir / f'{pid:04d}' / img_name)
+                if not Path(img_path).exists(): continue
                 self.train_data.append((img_path, mapped_pid, camid))
 
     def _process_test_info(self, info_path: Path, query_path: Path, img_names: List[str]) -> None:
@@ -122,6 +123,7 @@ class MEVID(ImageDataset):
                 
                 img_name = img_names[idx]
                 img_path = str(self.test_dir / f'{pid:04d}' / img_name)
+                if not Path(img_path).exists(): continue
                 tracklet_samples.append((img_path, pid, camid, outfit_id))
 
             if row_idx in query_indices:
