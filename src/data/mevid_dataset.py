@@ -99,7 +99,7 @@ class MEVID(ImageDataset):
                     continue
                 
                 img_name = img_names[idx]
-                img_path = str(self.train_dir / img_name)
+                img_path = str(self.train_dir / f'{pid:04d}' / img_name)
                 self.train_data.append((img_path, mapped_pid, camid))
 
     def _process_test_info(self, info_path: Path, query_path: Path, img_names: List[str]) -> None:
@@ -121,7 +121,7 @@ class MEVID(ImageDataset):
                     continue
                 
                 img_name = img_names[idx]
-                img_path = str(self.test_dir / img_name)
+                img_path = str(self.test_dir / f'{pid:04d}' / img_name)
                 tracklet_samples.append((img_path, pid, camid, outfit_id))
 
             if row_idx in query_indices:
