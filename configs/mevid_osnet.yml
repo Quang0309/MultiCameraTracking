@@ -7,14 +7,19 @@ DATASETS:
 MODEL:
   BACKBONE:
     NAME: "build_osnet_backbone"
-    PRETRAIN_PATH: ""
+    DEPTH: "x1.0"
+    PRETRAIN: True
   HEADS:
     EMBEDDING_DIM: 512
 
 SOLVER:
-  MAX_EPOCH: 60
-  BASE_LR: 0.00035
-  OPT: "Adam"
-  IMS_PER_BATCH: 64
+  MAX_EPOCH: 120
+  BASE_LR: 0.003
+  OPT: "SGD"
+  IMS_PER_BATCH: 128
+  CHECKPOINT_PERIOD: 2
+
+TEST:
+  EVAL_PERIOD: 2
 
 OUTPUT_DIR: "results/osnet"

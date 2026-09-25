@@ -8,14 +8,18 @@ MODEL:
   BACKBONE:
     NAME: "build_resnet_backbone"
     DEPTH: "50x"
-    WITH_IBN: true
-    PRETRAIN_PATH: ""
+    PRETRAIN: True
   HEADS:
-    EMBEDDING_DIM: 0
+    EMBEDDING_DIM: 2048
 
 SOLVER:
-  MAX_EPOCH: 60
-  BASE_LR: 0.00035
-  IMS_PER_BATCH: 64
+  MAX_EPOCH: 120
+  BASE_LR: 0.008
+  OPT: "SGD"
+  IMS_PER_BATCH: 128
+  CHECKPOINT_PERIOD: 2
+
+TEST:
+  EVAL_PERIOD: 2
 
 OUTPUT_DIR: "results/resnet50"
