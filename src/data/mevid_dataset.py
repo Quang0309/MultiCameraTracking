@@ -60,6 +60,9 @@ class MEVID(ImageDataset):
         if not self.annotation_dir.exists():
             logger.warning(f"Annotation dir not found: {self.annotation_dir}. Dataset is empty.")
             return
+            
+        if not self.train_dir.exists() or not self.test_dir.exists():
+            raise FileNotFoundError(f"Missing train or test directory! Please make sure {self.train_dir} and {self.test_dir} are extracted.")
 
         train_names = self._read_lines(self.annotation_dir / "train_name.txt")
         test_names = self._read_lines(self.annotation_dir / "test_name.txt")
