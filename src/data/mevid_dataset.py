@@ -228,7 +228,7 @@ class MEVID_Mini(ImageDataset):
         items = []
         for line in track_lines:
             parts = line.replace(',', ' ').split()
-                start, end, pid, oid, cid = [int(float(x)) for x in parts]
+            start, end, pid, oid, cid = [int(float(x)) for x in parts]
             for i in range(start, end):
                 img_name = name_lines[i]
                 img_path = os.path.join(img_dir, img_name)
@@ -256,7 +256,7 @@ class MEVID_Mini(ImageDataset):
         
         for idx, line in enumerate(track_lines):
             parts = line.replace(',', ' ').split()
-                start, end, pid, oid, cid = [int(float(x)) for x in parts]
+            start, end, pid, oid, cid = [int(float(x)) for x in parts]
             for i in range(start, end):
                 img_name = name_lines[i]
                 img_path = os.path.join(self.test_dir, img_name)
