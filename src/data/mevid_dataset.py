@@ -194,3 +194,77 @@ class MEVID_Sample(MEVID):
             
         logger.info(f"Sample loaded: {len(self.train_data)} train, {len(self.query_data)} query, {len(self.gallery_data)} gallery")
 
+
+@DATASET_REGISTRY.register()
+class MEVID_Mini(ImageDataset):
+    """
+    Bullet-proof dataloader for the shrunk MEVID_Sample_Dataset.
+    """
+    dataset_dir = "MEVID_Sample_Dataset"
+
+    def __init__(self, root='datasets', **kwargs):
+        self.root = root
+        self.dataset_dir = os.path.join(self.root, self.dataset_dir)
+        
+        self.train_dir = os.path.join(self.dataset_dir, 'bbox_train')
+        self.test_dir = os.path.join(self.dataset_dir, 'bbox_test')
+        self.anno_dir = os.path.join(self.dataset_dir, 'mevid-v1-annotation-data')
+        
+        train_items = self._process_dir("train")
+        query_items, gallery_items = self._process_test()
+        
+        super(MEVID_Mini, self).__init__(train_items, query_items, gallery_items, **kwargs)
+
+    def _process_dir(self, split):
+        track_info_file = os.path.join(self.anno_dir, f'track_{split}_info.txt')
+        name_file = os.path.join(self.anno_dir, f'{split}_name.txt')
+        img_dir = self.train_dir if split == "train" else self.test_dir
+        
+        with open(track_info_file, 'r') as f:
+            track_lines = f.read().splitlines()
+        with open(name_file, 'r') as f:
+            name_lines = f.read().splitlines()
+            
+        items = []
+        for line in track_lines:
+            parts = line.replace(',', ' ').split()
+                start, end, pid, oid, cid = [int(float(x)) for x in parts]
+            for i in range(start, end):
+                img_name = name_lines[i]
+                img_path = os.path.join(img_dir, img_name)
+                
+                # ONLY add the image if it physically exists on the drive!
+                if os.path.exists(img_path):
+                    items.append((img_path, pid, cid))
+                    
+        return items
+        
+    def _process_test(self):
+        track_info_file = os.path.join(self.anno_dir, 'track_test_info.txt')
+        name_file = os.path.join(self.anno_dir, 'test_name.txt')
+        query_idx_file = os.path.join(self.anno_dir, 'query_IDX.txt')
+        
+        with open(track_info_file, 'r') as f:
+            track_lines = f.read().splitlines()
+        with open(name_file, 'r') as f:
+            name_lines = f.read().splitlines()
+        with open(query_idx_file, 'r') as f:
+            query_indices = set([int(float(x)) for x in f.read().splitlines()])
+            
+        query_items = []
+        gallery_items = []
+        
+        for idx, line in enumerate(track_lines):
+            parts = line.replace(',', ' ').split()
+                start, end, pid, oid, cid = [int(float(x)) for x in parts]
+            for i in range(start, end):
+                img_name = name_lines[i]
+                img_path = os.path.join(self.test_dir, img_name)
+                
+                if os.path.exists(img_path):
+                    if idx in query_indices:
+                        query_items.append((img_path, pid, cid))
+                    else:
+                        gallery_items.append((img_path, pid, cid))
+                        
+        return query_items, gallery_items
