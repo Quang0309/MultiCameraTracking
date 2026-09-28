@@ -47,7 +47,9 @@ if args.eval_only:
         Checkpointer(model).load(cfg.MODEL.WEIGHTS)
         
         res = DefaultTrainer.test(cfg, model)
-        return restrainer = DefaultTrainer(cfg)
+        return res
+
+    trainer = DefaultTrainer(cfg)
     trainer.resume_or_load(resume=args.resume)
     return trainer.train()
 
