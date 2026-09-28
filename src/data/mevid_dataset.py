@@ -199,6 +199,7 @@ class MEVID_Sample(MEVID):
 class MEVID_Mini(ImageDataset):
     """
     Bullet-proof dataloader for the shrunk MEVID_Sample_Dataset.
+    OPTIMIZED: Uses memory sets to bypass slow filesystem checks!
     """
     dataset_dir = "MEVID_Sample_Dataset"
 
@@ -225,16 +226,19 @@ class MEVID_Mini(ImageDataset):
         with open(name_file, 'r') as f:
             name_lines = f.read().splitlines()
             
+        # 🔥 THE FIX: Load all filenames into memory once! (Takes 0.1 seconds)
+        existing_files = set(os.listdir(img_dir)) if os.path.exists(img_dir) else set()
+        
         items = []
         for line in track_lines:
             parts = line.replace(',', ' ').split()
             start, end, pid, oid, cid = [int(float(x)) for x in parts]
             for i in range(start, end):
                 img_name = name_lines[i]
-                img_path = os.path.join(img_dir, img_name)
                 
-                # ONLY add the image if it physically exists on the drive!
-                if os.path.exists(img_path):
+                # 🔥 Instant memory lookup instead of slow hard-drive check!
+                if img_name in existing_files:
+                    img_path = os.path.join(img_dir, img_name)
                     items.append((img_path, pid, cid))
                     
         return items
@@ -251,6 +255,9 @@ class MEVID_Mini(ImageDataset):
         with open(query_idx_file, 'r') as f:
             query_indices = set([int(float(x)) for x in f.read().splitlines()])
             
+        # 🔥 THE FIX: Load all test filenames into memory once!
+        existing_files = set(os.listdir(self.test_dir)) if os.path.exists(self.test_dir) else set()
+        
         query_items = []
         gallery_items = []
         
@@ -259,9 +266,10 @@ class MEVID_Mini(ImageDataset):
             start, end, pid, oid, cid = [int(float(x)) for x in parts]
             for i in range(start, end):
                 img_name = name_lines[i]
-                img_path = os.path.join(self.test_dir, img_name)
                 
-                if os.path.exists(img_path):
+                # 🔥 Instant memory lookup
+                if img_name in existing_files:
+                    img_path = os.path.join(self.test_dir, img_name)
                     if idx in query_indices:
                         query_items.append((img_path, pid, cid))
                     else:
