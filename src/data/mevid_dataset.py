@@ -227,7 +227,11 @@ class MEVID_Mini(ImageDataset):
             name_lines = f.read().splitlines()
             
         # 🔥 THE FIX: Load all filenames into memory once! (Takes 0.1 seconds)
-        existing_files = set(os.listdir(img_dir)) if os.path.exists(img_dir) else set()
+        existing_files = set()
+        if os.path.exists(img_dir):
+            for root, _, files in os.walk(img_dir):
+                for f in files:
+                    existing_files.add(os.path.relpath(os.path.join(root, f), img_dir))
         
         items = []
         for line in track_lines:
@@ -256,7 +260,11 @@ class MEVID_Mini(ImageDataset):
             query_indices = set([int(float(x)) for x in f.read().splitlines()])
             
         # 🔥 THE FIX: Load all test filenames into memory once!
-        existing_files = set(os.listdir(self.test_dir)) if os.path.exists(self.test_dir) else set()
+        existing_files = set()
+        if os.path.exists(self.test_dir):
+            for root, _, files in os.walk(self.test_dir):
+                for f in files:
+                    existing_files.add(os.path.relpath(os.path.join(root, f), self.test_dir))
         
         query_items = []
         gallery_items = []
