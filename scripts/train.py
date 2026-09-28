@@ -20,6 +20,7 @@ except ImportError:
 
 from fastreid.config import get_cfg
 from fastreid.engine import default_argument_parser, default_setup, launch, DefaultTrainer
+from fastreid.utils.checkpoint import Checkpointer
 
 # Import our custom dataset to trigger Fast-ReID registration
 from src.data.mevid_dataset import MEVID
@@ -38,12 +39,11 @@ def setup(args):
 def main(args):
     cfg = setup(args)
 
-if args.eval_only:
+    if args.eval_only:
         cfg.defrost()
         cfg.MODEL.BACKBONE.PRETRAIN = False
         model = DefaultTrainer.build_model(cfg)
         
-        from fastreid.utils.checkpoint import Checkpointer
         Checkpointer(model).load(cfg.MODEL.WEIGHTS)
         
         res = DefaultTrainer.test(cfg, model)
