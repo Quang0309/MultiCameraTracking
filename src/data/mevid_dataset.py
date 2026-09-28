@@ -231,7 +231,7 @@ class MEVID_Mini(ImageDataset):
         if os.path.exists(img_dir):
             for root, _, files in os.walk(img_dir):
                 for f in files:
-                    existing_files.add(os.path.relpath(os.path.join(root, f), img_dir))
+                    existing_files.add(f)
         
         items = []
         for line in track_lines:
@@ -242,7 +242,7 @@ class MEVID_Mini(ImageDataset):
                 
                 # 🔥 Instant memory lookup instead of slow hard-drive check!
                 if img_name in existing_files:
-                    img_path = os.path.join(img_dir, img_name)
+                    img_path = os.path.join(img_dir, f'{pid:04d}', img_name)
                     items.append((img_path, pid, cid))
                     
         return items
@@ -264,7 +264,7 @@ class MEVID_Mini(ImageDataset):
         if os.path.exists(self.test_dir):
             for root, _, files in os.walk(self.test_dir):
                 for f in files:
-                    existing_files.add(os.path.relpath(os.path.join(root, f), self.test_dir))
+                    existing_files.add(f)
         
         query_items = []
         gallery_items = []
@@ -277,7 +277,7 @@ class MEVID_Mini(ImageDataset):
                 
                 # 🔥 Instant memory lookup
                 if img_name in existing_files:
-                    img_path = os.path.join(self.test_dir, img_name)
+                    img_path = os.path.join(self.test_dir, f'{pid:04d}', img_name)
                     if idx in query_indices:
                         query_items.append((img_path, pid, cid))
                     else:
