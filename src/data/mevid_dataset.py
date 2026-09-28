@@ -200,17 +200,20 @@ class MEVID_Mini(ImageDataset):
     """
     Bullet-proof dataloader for the shrunk MEVID_Sample_Dataset.
     OPTIMIZED: Uses memory sets to bypass slow filesystem checks!
+    CORRECTED: Uses exact 1-based indexing logic from original MEVID.
     """
-    dataset_dir = "MEVID_Sample_Dataset"
-
     def __init__(self, root='datasets', **kwargs):
-        self.root = root
-        self.dataset_dir = os.path.join(self.root, self.dataset_dir)
-        
+        # We handle Kaggle input paths automatically, or fallback to relative
+        if os.path.exists("/kaggle/input/datasets/quangnguyen97/mevid-sample/MEVID_Sample_Dataset"):
+            self.dataset_dir = "/kaggle/input/datasets/quangnguyen97/mevid-sample/MEVID_Sample_Dataset"
+        else:
+            self.dataset_dir = os.path.join(root, "MEVID_Sample_Dataset")
+            
         self.train_dir = os.path.join(self.dataset_dir, 'bbox_train')
         self.test_dir = os.path.join(self.dataset_dir, 'bbox_test')
         self.anno_dir = os.path.join(self.dataset_dir, 'mevid-v1-annotation-data')
         
+        self.pid_map = {}
         train_items = self._process_dir("train")
         query_items, gallery_items = self._process_test()
         
@@ -226,24 +229,35 @@ class MEVID_Mini(ImageDataset):
         with open(name_file, 'r') as f:
             name_lines = f.read().splitlines()
             
-        # 🔥 THE FIX: Load all filenames into memory once! (Takes 0.1 seconds)
         existing_files = set()
         if os.path.exists(img_dir):
-            for root, _, files in os.walk(img_dir):
+            for r, _, files in os.walk(img_dir):
                 for f in files:
                     existing_files.add(f)
         
         items = []
+        pid_counter = 0
+        
         for line in track_lines:
-            parts = line.replace(',', ' ').split()
-            start, end, pid, oid, cid = [int(float(x)) for x in parts]
-            for i in range(start, end):
-                img_name = name_lines[i]
+            parts = line.split()
+            if len(parts) != 5: continue
+            
+            start_idx, end_idx, pid, oid, cid = [int(float(x)) for x in parts]
+            
+            if pid not in self.pid_map:
+                self.pid_map[pid] = pid_counter
+                pid_counter += 1
+            mapped_pid = self.pid_map[pid]
+            
+            for i in range(start_idx, end_idx + 1):
+                idx = i - 1 if start_idx > 0 else i
+                if idx < 0 or idx >= len(name_lines): continue
                 
-                # 🔥 Instant memory lookup instead of slow hard-drive check!
+                img_name = name_lines[idx]
+                
                 if img_name in existing_files:
                     img_path = os.path.join(img_dir, f'{pid:04d}', img_name)
-                    items.append((img_path, pid, cid))
+                    items.append((img_path, mapped_pid, cid))
                     
         return items
         
@@ -259,26 +273,30 @@ class MEVID_Mini(ImageDataset):
         with open(query_idx_file, 'r') as f:
             query_indices = set([int(float(x)) for x in f.read().splitlines()])
             
-        # 🔥 THE FIX: Load all test filenames into memory once!
         existing_files = set()
         if os.path.exists(self.test_dir):
-            for root, _, files in os.walk(self.test_dir):
+            for r, _, files in os.walk(self.test_dir):
                 for f in files:
                     existing_files.add(f)
         
         query_items = []
         gallery_items = []
         
-        for idx, line in enumerate(track_lines):
-            parts = line.replace(',', ' ').split()
-            start, end, pid, oid, cid = [int(float(x)) for x in parts]
-            for i in range(start, end):
-                img_name = name_lines[i]
+        for row_idx, line in enumerate(track_lines):
+            parts = line.split()
+            if len(parts) != 5: continue
+            
+            start_idx, end_idx, pid, oid, cid = [int(float(x)) for x in parts]
+            
+            for i in range(start_idx, end_idx + 1):
+                idx = i - 1 if start_idx > 0 else i
+                if idx < 0 or idx >= len(name_lines): continue
                 
-                # 🔥 Instant memory lookup
+                img_name = name_lines[idx]
+                
                 if img_name in existing_files:
                     img_path = os.path.join(self.test_dir, f'{pid:04d}', img_name)
-                    if idx in query_indices:
+                    if row_idx in query_indices:
                         query_items.append((img_path, pid, cid))
                     else:
                         gallery_items.append((img_path, pid, cid))
