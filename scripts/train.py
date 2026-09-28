@@ -38,16 +38,16 @@ def setup(args):
 def main(args):
     cfg = setup(args)
 
-    if args.eval_only:
+if args.eval_only:
         cfg.defrost()
         cfg.MODEL.BACKBONE.PRETRAIN = False
         model = DefaultTrainer.build_model(cfg)
         
-        # Load weights and evaluate
-        # Using DefaultTrainer evaluation logic if implemented
-        return 
+        from fastreid.utils.checkpoint import Checkpointer
+        Checkpointer(model).load(cfg.MODEL.WEIGHTS)
         
-    trainer = DefaultTrainer(cfg)
+        res = DefaultTrainer.test(cfg, model)
+        return restrainer = DefaultTrainer(cfg)
     trainer.resume_or_load(resume=args.resume)
     return trainer.train()
 
