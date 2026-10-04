@@ -203,6 +203,10 @@ class MEVID_Mini(ImageDataset):
     CORRECTED: Uses exact 1-based indexing logic from original MEVID.
     """
     def __init__(self, root='datasets', **kwargs):
+        # Keep every Nth existing frame per tracklet; consecutive frames are near-duplicates.
+        # Override with e.g. MEVID_SAMPLE_STEP=1 to use every frame.
+        self.sample_step = max(1, int(os.getenv("MEVID_SAMPLE_STEP", "10")))
+
         # We handle Kaggle input paths automatically, or fallback to relative
         if os.path.exists("/kaggle/input/datasets/quangnguyen97/mevid-sample/MEVID_Sample_Dataset"):
             self.dataset_dir = "/kaggle/input/datasets/quangnguyen97/mevid-sample/MEVID_Sample_Dataset"
@@ -248,18 +252,24 @@ class MEVID_Mini(ImageDataset):
                 self.pid_map[pid] = pid_counter
                 pid_counter += 1
             mapped_pid = self.pid_map[pid]
-            
-            for i in range(start_idx, end_idx + 1):
-                idx = i - 1 if start_idx > 0 else i
-                if idx < 0 or idx >= len(name_lines): continue
-                
-                img_name = name_lines[idx]
-                
-                if img_name in existing_files:
-                    img_path = os.path.join(img_dir, f'{pid:04d}', img_name)
-                    items.append((img_path, mapped_pid, cid))
-                    
+
+            for img_name in self._tracklet_frames(start_idx, end_idx, name_lines, existing_files):
+                img_path = os.path.join(img_dir, f'{pid:04d}', img_name)
+                items.append((img_path, mapped_pid, cid))
+
         return items
+
+    def _tracklet_frames(self, start_idx, end_idx, name_lines, existing_files):
+        """Existing frame names of one tracklet, keeping every sample_step-th frame."""
+        frames = []
+        for i in range(start_idx, end_idx + 1):
+            idx = i - 1 if start_idx > 0 else i
+            if idx < 0 or idx >= len(name_lines): continue
+
+            img_name = name_lines[idx]
+            if img_name in existing_files:
+                frames.append(img_name)
+        return frames[::self.sample_step]
         
     def _process_test(self):
         track_info_file = os.path.join(self.anno_dir, 'track_test_info.txt')
@@ -288,17 +298,11 @@ class MEVID_Mini(ImageDataset):
             
             start_idx, end_idx, pid, oid, cid = [int(float(x)) for x in parts]
             
-            for i in range(start_idx, end_idx + 1):
-                idx = i - 1 if start_idx > 0 else i
-                if idx < 0 or idx >= len(name_lines): continue
-                
-                img_name = name_lines[idx]
-                
-                if img_name in existing_files:
-                    img_path = os.path.join(self.test_dir, f'{pid:04d}', img_name)
-                    if row_idx in query_indices:
-                        query_items.append((img_path, pid, cid))
-                    else:
-                        gallery_items.append((img_path, pid, cid))
+            for img_name in self._tracklet_frames(start_idx, end_idx, name_lines, existing_files):
+                img_path = os.path.join(self.test_dir, f'{pid:04d}', img_name)
+                if row_idx in query_indices:
+                    query_items.append((img_path, pid, cid))
+                else:
+                    gallery_items.append((img_path, pid, cid))
                         
         return query_items, gallery_items
