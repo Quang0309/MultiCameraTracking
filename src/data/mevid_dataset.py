@@ -220,45 +220,38 @@ class MEVID_Mini(ImageDataset):
         super(MEVID_Mini, self).__init__(train_items, query_items, gallery_items, **kwargs)
 
     def _process_dir(self, split):
-        track_info_file = os.path.join(self.anno_dir, f'track_{split}_info.txt')
-        name_file = os.path.join(self.anno_dir, f'{split}_name.txt')
         img_dir = self.train_dir if split == "train" else self.test_dir
-        
-        with open(track_info_file, 'r') as f:
-            track_lines = f.read().splitlines()
-        with open(name_file, 'r') as f:
-            name_lines = f.read().splitlines()
-            
-        existing_files = set()
-        if os.path.exists(img_dir):
-            for r, _, files in os.walk(img_dir):
-                for f in files:
-                    existing_files.add(f)
-        
         items = []
-        pid_counter = 0
         
-        for line in track_lines:
-            parts = line.split()
-            if len(parts) != 5: continue
+        # Bypass the buggy text files and parse the physical folders directly!
+        if not os.path.exists(img_dir):
+            return items
             
-            start_idx, end_idx, pid, oid, cid = [int(float(x)) for x in parts]
+        for pid_folder in sorted(os.listdir(img_dir)):
+            pid_path = os.path.join(img_dir, pid_folder)
+            if not os.path.isdir(pid_path): 
+                continue
             
+            # 1. Get the actual PID directly from the folder name
+            pid = int(pid_folder)
             if pid not in self.pid_map:
-                self.pid_map[pid] = pid_counter
-                pid_counter += 1
+                self.pid_map[pid] = len(self.pid_map)
             mapped_pid = self.pid_map[pid]
             
-            for i in range(start_idx, end_idx + 1):
-                idx = i - 1 if start_idx > 0 else i
-                if idx < 0 or idx >= len(name_lines): continue
+            # 2. Grab every image inside this person's folder
+            for img_name in os.listdir(pid_path):
+                if not img_name.endswith('.jpg'): 
+                    continue
+                img_path = os.path.join(pid_path, img_name)
                 
-                img_name = name_lines[idx]
-                
-                if img_name in existing_files:
-                    img_path = os.path.join(img_dir, f'{pid:04d}', img_name)
-                    items.append((img_path, mapped_pid, cid))
+                # 3. Extract the camera ID from the filename (e.g., ...C330...)
+                try:
+                    cid = int(img_name.split('C')[1].split('T')[0])
+                except:
+                    cid = 0 # fallback if filename format is weird
                     
+                items.append((img_path, mapped_pid, cid))
+                
         return items
         
     def _process_test(self):
