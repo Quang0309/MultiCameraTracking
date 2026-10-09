@@ -223,32 +223,36 @@ class MEVID_Mini(ImageDataset):
         img_dir = self.train_dir if split == "train" else self.test_dir
         items = []
         
-        # Bypass the buggy text files and parse the physical folders directly!
         if not os.path.exists(img_dir):
             return items
             
-        for pid_folder in sorted(os.listdir(img_dir)):
-            pid_path = os.path.join(img_dir, pid_folder)
-            if not os.path.isdir(pid_path): 
+        # Traverse every subfolder, but IGNORE the folder name for labels!
+        for subfolder in sorted(os.listdir(img_dir)):
+            sub_path = os.path.join(img_dir, subfolder)
+            if not os.path.isdir(sub_path): 
                 continue
             
-            # 1. Get the actual PID directly from the folder name
-            pid = int(pid_folder)
-            if pid not in self.pid_map:
-                self.pid_map[pid] = len(self.pid_map)
-            mapped_pid = self.pid_map[pid]
-            
-            # 2. Grab every image inside this person's folder
-            for img_name in os.listdir(pid_path):
+            for img_name in os.listdir(sub_path):
                 if not img_name.endswith('.jpg'): 
                     continue
-                img_path = os.path.join(pid_path, img_name)
+                img_path = os.path.join(sub_path, img_name)
                 
-                # 3. Extract the camera ID from the filename (e.g., ...C330...)
+                # The ultimate source of truth: The MEVID Filename (e.g., 0201O003C330...)
                 try:
+                    # Extract PID from the very beginning of the filename (before the 'O')
+                    true_pid_str = img_name.split('O')[0]
+                    true_pid = int(true_pid_str)
+                    
+                    # Extract Camera ID
                     cid = int(img_name.split('C')[1].split('T')[0])
                 except:
-                    cid = 0 # fallback if filename format is weird
+                    # If the filename format is broken, skip this image to prevent poisoning the training
+                    continue
+                
+                # Map the true PID to 0, 1, 2... for PyTorch
+                if true_pid not in self.pid_map:
+                    self.pid_map[true_pid] = len(self.pid_map)
+                mapped_pid = self.pid_map[true_pid]
                     
                 items.append((img_path, mapped_pid, cid))
                 
