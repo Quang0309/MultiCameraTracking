@@ -97,8 +97,10 @@ def main():
     query_metas = [(p, c, o) for p, c, o in zip(all_pids[:num_query], all_camids[:num_query], all_outfits[:num_query])]
     gallery_metas = [(p, c, o) for p, c, o in zip(all_pids[num_query:], all_camids[num_query:], all_outfits[num_query:])]
 
-    print("[INFO] Computing Cosine Distance Matrix...")
-    distmat = cdist(query_feats, gallery_feats, metric='cosine')
+    print("[INFO] Computing Cosine Distance Matrix on GPU...")
+    q_tensor = torch.tensor(query_feats, device=model.device, dtype=torch.float32)
+    g_tensor = torch.tensor(gallery_feats, device=model.device, dtype=torch.float32)
+    distmat = (1.0 - torch.mm(q_tensor, g_tensor.t())).cpu().numpy()
     print(f"[INFO] Distance matrix computed: {distmat.shape}")
 
     print("\n[INFO] Running Multi-Protocol MEVID Evaluation...")

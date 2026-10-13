@@ -58,9 +58,12 @@ def evaluate(args):
     gallery_features = extractor.extract_from_paths(gallery_paths, batch_size=args.batch_size)
     logger.info(f"Gallery features shape: {gallery_features.shape}")
 
-    # Compute distance matrix (cosine distance)
-    logger.info("Computing distance matrix...")
-    distmat = cdist(query_features, gallery_features, metric='cosine')
+    # Compute distance matrix (cosine distance) on GPU/device
+    logger.info("Computing distance matrix on accelerator...")
+    import torch
+    q_tensor = torch.tensor(query_features, device=extractor.device, dtype=torch.float32)
+    g_tensor = torch.tensor(gallery_features, device=extractor.device, dtype=torch.float32)
+    distmat = (1.0 - torch.mm(q_tensor, g_tensor.t())).cpu().numpy()
     logger.info(f"Distance matrix shape: {distmat.shape}")
 
     # Prepare metadata for evaluator
