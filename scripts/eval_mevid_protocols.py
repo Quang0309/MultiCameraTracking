@@ -100,8 +100,11 @@ def main():
     print("[INFO] Computing Cosine Distance Matrix on GPU...")
     q_tensor = torch.tensor(query_feats, device=model.device, dtype=torch.float32)
     g_tensor = torch.tensor(gallery_feats, device=model.device, dtype=torch.float32)
-    distmat = (1.0 - torch.mm(q_tensor, g_tensor.t())).cpu().numpy()
-    print(f"[INFO] Distance matrix computed: {distmat.shape}")
+    distmat_tensor = 1.0 - torch.mm(q_tensor, g_tensor.t())
+    print("[INFO] Sorting rankings on GPU (torch.argsort)...")
+    indices = torch.argsort(distmat_tensor, dim=1).cpu().numpy()
+    distmat = distmat_tensor.cpu().numpy()
+    print(f"[INFO] Distance matrix and ranking indices computed: {distmat.shape}")
 
     print("\n[INFO] Running Multi-Protocol MEVID Evaluation...")
     evaluator = MEVIDEvaluator(query_metas, gallery_metas)
@@ -110,8 +113,8 @@ def main():
     results = {}
     table_rows = []
 
-    for proto in protocols:
-        res = evaluator.evaluate(distmat, protocol=proto)
+    for proto in tqdm(protocols, desc="Protocols"):
+        res = evaluator.evaluate(distmat, protocol=proto, indices=indices)
         results[proto] = res
         table_rows.append([
             proto.replace('_', ' ').title(),
