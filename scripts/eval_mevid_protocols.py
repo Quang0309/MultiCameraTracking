@@ -97,14 +97,29 @@ def main():
     query_metas = [(p, c, o) for p, c, o in zip(all_pids[:num_query], all_camids[:num_query], all_outfits[:num_query])]
     gallery_metas = [(p, c, o) for p, c, o in zip(all_pids[num_query:], all_camids[num_query:], all_outfits[num_query:])]
 
-    print("[INFO] Computing Cosine Distance Matrix on GPU...")
-    q_tensor = torch.tensor(query_feats, device=model.device, dtype=torch.float32)
-    g_tensor = torch.tensor(gallery_feats, device=model.device, dtype=torch.float32)
-    distmat_tensor = 1.0 - torch.mm(q_tensor, g_tensor.t())
-    print("[INFO] Sorting rankings on GPU (torch.argsort)...")
-    indices = torch.argsort(distmat_tensor, dim=1).cpu().numpy()
-    distmat = distmat_tensor.cpu().numpy()
-    print(f"[INFO] Distance matrix and ranking indices computed: {distmat.shape}")
+    device = model.device
+    del model
+    del test_loader
+    torch.cuda.empty_cache()
+    print("[INFO] Model freed from GPU. Proceeding to memory-safe ranking...")
+
+    print("[INFO] Computing Distance & Sorting Rankings in GPU chunks...")
+    g_tensor = torch.tensor(gallery_feats, device=device, dtype=torch.float32)
+    indices_list = []
+
+    chunk_size = 1000
+    for i in tqdm(range(0, len(query_feats), chunk_size), desc="Ranking Chunks"):
+        q_chunk = torch.tensor(query_feats[i:i + chunk_size], device=device, dtype=torch.float32)
+        dist_chunk = 1.0 - torch.mm(q_chunk, g_tensor.t())
+        idx_chunk = torch.argsort(dist_chunk, dim=1).cpu().numpy()
+        indices_list.append(idx_chunk)
+        del q_chunk, dist_chunk
+        torch.cuda.empty_cache()
+
+    indices = np.concatenate(indices_list, axis=0)
+    del g_tensor
+    torch.cuda.empty_cache()
+    print(f"[INFO] Ranking indices computed: {indices.shape}")
 
     print("\n[INFO] Running Multi-Protocol MEVID Evaluation...")
     evaluator = MEVIDEvaluator(query_metas, gallery_metas)
@@ -114,7 +129,7 @@ def main():
     table_rows = []
 
     for proto in tqdm(protocols, desc="Protocols"):
-        res = evaluator.evaluate(distmat, protocol=proto, indices=indices)
+        res = evaluator.evaluate(protocol=proto, indices=indices)
         results[proto] = res
         table_rows.append([
             proto.replace('_', ' ').title(),

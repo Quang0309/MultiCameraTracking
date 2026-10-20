@@ -22,23 +22,27 @@ class MEVIDEvaluator:
         self.g_camids = np.array([m[1] for m in gallery_metas])
         self.g_outfits = np.array([m[2] for m in gallery_metas])
 
-    def evaluate(self, distmat: np.ndarray, protocol: str = 'general', indices: np.ndarray = None) -> Dict[str, Any]:
+    def evaluate(self, distmat: np.ndarray = None, protocol: str = 'general', indices: np.ndarray = None) -> Dict[str, Any]:
         """Evaluate the distance matrix under a specific protocol.
         
         Args:
-            distmat: Numpy array of shape (num_query, num_gallery), distance matrix.
+            distmat: Optional numpy array of shape (num_query, num_gallery), distance matrix.
             protocol: 'general', 'same_outfit', or 'cross_outfit'.
             indices: Optional precomputed sorted indices of distmat.
             
         Returns:
             Dict containing 'mAP' and 'cmc' (list of rank-k accuracies).
         """
-        num_q, num_g = distmat.shape
-        if num_q != len(self.q_pids) or num_g != len(self.g_pids):
-            raise ValueError(f"Distance matrix shape {distmat.shape} does not match meta data {len(self.q_pids)}x{len(self.g_pids)}")
-
-        if indices is None:
+        if indices is not None:
+            num_q, num_g = indices.shape
+        elif distmat is not None:
+            num_q, num_g = distmat.shape
             indices = np.argsort(distmat, axis=1)
+        else:
+            raise ValueError("Either distmat or indices must be provided.")
+
+        if num_q != len(self.q_pids) or num_g != len(self.g_pids):
+            raise ValueError(f"Shape {num_q}x{num_g} does not match meta data {len(self.q_pids)}x{len(self.g_pids)}")
         
         all_cmc = []
         all_AP = []
