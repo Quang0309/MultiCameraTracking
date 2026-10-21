@@ -224,10 +224,24 @@ class MEVID_Mini(ImageDataset):
         super(MEVID_Mini, self).__init__(train_items, query_items, gallery_items, **kwargs)
 
     def _process_dir(self, split):
+        track_info_file = os.path.join(self.anno_dir, f'track_{split}_info.txt')
+        name_file = os.path.join(self.anno_dir, f'{split}_name.txt')
         img_dir = self.train_dir if split == "train" else self.test_dir
+
+        with open(track_info_file, 'r') as f:
+            track_lines = f.read().splitlines()
+        with open(name_file, 'r') as f:
+            name_lines = f.read().splitlines()
+
+        existing_files = set()
+        if os.path.exists(img_dir):
+            for r, _, files in os.walk(img_dir):
+                for f in files:
+                    existing_files.add(f)
+
         items = []
         pid_counter = 0
-        
+
         for line in track_lines:
             parts = line.split()
             if len(parts) != 5: continue
