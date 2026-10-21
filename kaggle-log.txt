@@ -1,0 +1,583 @@
+Command Line Args: Namespace(config_file='configs/mevid_bot_r50_ibn.yml', resume=False, eval_only=False, num_gpus=1, num_machines=1, machine_rank=0, dist_url='tcp://127.0.0.1:49152', opts=['DATASETS.NAMES', "('MEVID_Mini',)", 'DATASETS.TESTS', "('MEVID_Mini',)", 'SOLVER.IMS_PER_BATCH', '32', 'SOLVER.BASE_LR', '0.001', 'SOLVER.FREEZE_ITERS', '200', 'SOLVER.MAX_EPOCH', '60', 'SOLVER.CHECKPOINT_PERIOD', '1', 'TEST.EVAL_PERIOD', '5', 'MODEL.WEIGHTS', '/kaggle/working/msmt_bot_R50-ibn.pth', 'OUTPUT_DIR', '/kaggle/working/result/bot_train'], model=None)
+[10/03 04:01:47 fastreid]: Rank of current process: 0. World size: 1
+[10/03 04:01:47 fastreid]: Environment info:
+----------------------  -----------------------------------------------------------------
+sys.platform            linux
+Python                  3.12.13 (main, Mar  4 2026, 09:23:07) [GCC 11.4.0]
+numpy                   2.0.2
+fastreid                1.3 @/kaggle/working/MultiCameraTracking/fastreid
+FASTREID_ENV_MODULE     <not set>
+PyTorch                 2.10.0+cu128 @/usr/local/lib/python3.12/dist-packages/torch
+PyTorch debug build     False
+GPU available           True
+GPU 0,1                 Tesla T4
+CUDA_HOME               /usr/local/cuda
+Pillow                  11.3.0
+torchvision             0.25.0+cu128 @/usr/local/lib/python3.12/dist-packages/torchvision
+torchvision arch flags  sm_100, sm_120, sm_70, sm_75, sm_80, sm_86, sm_90
+cv2                     4.13.0
+----------------------  -----------------------------------------------------------------
+PyTorch built with:
+  - GCC 13.3
+  - C++ Version: 201703
+  - Intel(R) oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v3.7.1 (Git Hash 8d263e693366ef8db40acc569cc7d8edf644556d)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX512
+  - CUDA Runtime 12.8
+  - NVCC architecture flags: -gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90;-gencode;arch=compute_100,code=sm_100;-gencode;arch=compute_120,code=sm_120
+  - CuDNN 91.0.2  (built against CUDA 12.9)
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=449b1768410104d3ed79d3bcfe4ba1d65c7f22c0, CUDA_VERSION=12.8, CUDNN_VERSION=9.10.2, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++, CXX_FLAGS= -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DLIBKINETO_NOXPUPTI=ON -DUSE_FBGEMM -DUSE_FBGEMM_GENAI -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -DC10_NODEPRECATED -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=range-loop-construct -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-unused-parameter -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=old-style-cast -faligned-new -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-dangling-reference -Wno-error=dangling-reference -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, TORCH_VERSION=2.10.0, USE_CUDA=ON, USE_CUDNN=ON, USE_CUSPARSELT=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=1, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, USE_XCCL=OFF, USE_XPU=OFF, 
+
+[10/03 04:01:47 fastreid]: Command line arguments: Namespace(config_file='configs/mevid_bot_r50_ibn.yml', resume=False, eval_only=False, num_gpus=1, num_machines=1, machine_rank=0, dist_url='tcp://127.0.0.1:49152', opts=['DATASETS.NAMES', "('MEVID_Mini',)", 'DATASETS.TESTS', "('MEVID_Mini',)", 'SOLVER.IMS_PER_BATCH', '32', 'SOLVER.BASE_LR', '0.001', 'SOLVER.FREEZE_ITERS', '200', 'SOLVER.MAX_EPOCH', '60', 'SOLVER.CHECKPOINT_PERIOD', '1', 'TEST.EVAL_PERIOD', '5', 'MODEL.WEIGHTS', '/kaggle/working/msmt_bot_R50-ibn.pth', 'OUTPUT_DIR', '/kaggle/working/result/bot_train'], model=None)
+[10/03 04:01:47 fastreid]: Contents of args.config_file=configs/mevid_bot_r50_ibn.yml:
+_BASE_: "Base-bagtricks.yml"
+
+# Bag of Tricks (BoT) R50-IBN, fine-tuned from fast-reid's MSMT17 checkpoint:
+# https://github.com/JDAI-CV/fast-reid/releases/download/v0.1.1/msmt_bot_R50-ibn.pth
+# Architecture mirrors fast-reid's configs/Base-bagtricks.yml so the weights load cleanly.
+
+DATASETS:
+  NAMES: ("MEVID_Mini",)
+  TESTS: ("MEVID_Mini",)
+
+MODEL:
+  META_ARCHITECTURE: "Baseline"
+  WEIGHTS: "/kaggle/working/msmt_bot_R50-ibn.pth"
+  # Freeze the backbone for the first FREEZE_ITERS while the new classifier warms up
+  FREEZE_LAYERS: ["backbone"]
+
+  BACKBONE:
+    NAME: "build_resnet_backbone"
+    NORM: "BN"
+    DEPTH: "50x"
+    LAST_STRIDE: 1
+    FEAT_DIM: 2048
+    WITH_IBN: True
+    WITH_NL: False
+    # Whole model is initialised from MODEL.WEIGHTS, so skip the ImageNet download
+    PRETRAIN: False
+
+  HEADS:
+    NAME: "EmbeddingHead"
+    NORM: "BN"
+    WITH_BNNECK: True
+    POOL_LAYER: "GlobalAvgPool"
+    NECK_FEAT: "before"
+    CLS_LAYER: "Linear"
+    EMBEDDING_DIM: 0
+
+  LOSSES:
+    NAME: ("CrossEntropyLoss", "TripletLoss")
+    CE:
+      EPSILON: 0.1
+      SCALE: 1.0
+    TRI:
+      MARGIN: 0.3
+      HARD_MINING: True
+      NORM_FEAT: False
+      SCALE: 1.0
+
+SOLVER:
+  OPT: "Adam"
+  BASE_LR: 0.0001
+  IMS_PER_BATCH: 32
+  MAX_EPOCH: 60
+  SCHED: "MultiStepLR"
+  STEPS: [25, 45]
+  GAMMA: 0.1
+  WARMUP_FACTOR: 0.1
+  WARMUP_ITERS: 500
+  FREEZE_ITERS: 200
+  CHECKPOINT_PERIOD: 5
+  AMP:
+    ENABLED: False
+
+TEST:
+  EVAL_PERIOD: 5
+
+OUTPUT_DIR: "/kaggle/working/result/bot_train"
+
+[10/03 04:01:47 fastreid]: Running with full config:
+CUDNN_BENCHMARK: False
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 2
+  SAMPLER_TRAIN: BalancedIdentitySampler
+  SET_WEIGHT: []
+DATASETS:
+  COMBINEALL: False
+  NAMES: ('MEVID_Mini',)
+  TESTS: ('MEVID_Mini',)
+INPUT:
+  AFFINE:
+    ENABLED: False
+  AUGMIX:
+    ENABLED: False
+    PROB: 0.0
+  AUTOAUG:
+    ENABLED: False
+    PROB: 0.0
+  CJ:
+    BRIGHTNESS: 0.15
+    CONTRAST: 0.15
+    ENABLED: True
+    HUE: 0.1
+    PROB: 0.5
+    SATURATION: 0.1
+  CROP:
+    ENABLED: False
+    RATIO: [0.75, 1.3333333333333333]
+    SCALE: [0.16, 1]
+    SIZE: [224, 224]
+  FLIP:
+    ENABLED: True
+    PROB: 0.5
+  PADDING:
+    ENABLED: True
+    MODE: constant
+    SIZE: 10
+  REA:
+    ENABLED: True
+    PROB: 0.5
+    VALUE: [123.675, 116.28, 103.53]
+  RPT:
+    ENABLED: False
+    PROB: 0.5
+  SIZE_TEST: [256, 128]
+  SIZE_TRAIN: [256, 128]
+KD:
+  EMA:
+    ENABLED: False
+    MOMENTUM: 0.999
+  MODEL_CONFIG: []
+  MODEL_WEIGHTS: []
+MODEL:
+  BACKBONE:
+    ATT_DROP_RATE: 0.0
+    DEPTH: 50x
+    DROP_PATH_RATIO: 0.1
+    DROP_RATIO: 0.0
+    FEAT_DIM: 2048
+    LAST_STRIDE: 1
+    NAME: build_resnet_backbone
+    NORM: BN
+    PRETRAIN: False
+    PRETRAIN_PATH: 
+    SIE_COE: 3.0
+    STRIDE_SIZE: (16, 16)
+    WITH_IBN: True
+    WITH_NL: False
+    WITH_SE: False
+  DEVICE: cuda
+  FREEZE_LAYERS: ['backbone']
+  HEADS:
+    CLS_LAYER: Linear
+    EMBEDDING_DIM: 0
+    MARGIN: 0.0
+    NAME: EmbeddingHead
+    NECK_FEAT: before
+    NORM: BN
+    NUM_CLASSES: 0
+    POOL_LAYER: GlobalAvgPool
+    SCALE: 1
+    WITH_BNNECK: True
+  LOSSES:
+    CE:
+      ALPHA: 0.2
+      EPSILON: 0.1
+      SCALE: 1.0
+    CIRCLE:
+      GAMMA: 128
+      MARGIN: 0.25
+      SCALE: 1.0
+    COSFACE:
+      GAMMA: 128
+      MARGIN: 0.25
+      SCALE: 1.0
+    FL:
+      ALPHA: 0.25
+      GAMMA: 2
+      SCALE: 1.0
+    NAME: ('CrossEntropyLoss', 'TripletLoss')
+    TRI:
+      HARD_MINING: True
+      MARGIN: 0.3
+      NORM_FEAT: False
+      SCALE: 1.0
+  META_ARCHITECTURE: Baseline
+  PIXEL_MEAN: [123.675, 116.28, 103.53]
+  PIXEL_STD: [58.395, 57.120000000000005, 57.375]
+  QUEUE_SIZE: 8192
+  WEIGHTS: /kaggle/working/msmt_bot_R50-ibn.pth
+OUTPUT_DIR: /kaggle/working/result/bot_train
+SOLVER:
+  AMP:
+    ENABLED: False
+  BASE_LR: 0.001
+  BIAS_LR_FACTOR: 1.0
+  CHECKPOINT_PERIOD: 1
+  CLIP_GRADIENTS:
+    CLIP_TYPE: norm
+    CLIP_VALUE: 5.0
+    ENABLED: False
+    NORM_TYPE: 2.0
+  DELAY_EPOCHS: 0
+  ETA_MIN_LR: 1e-07
+  FREEZE_ITERS: 200
+  GAMMA: 0.1
+  HEADS_LR_FACTOR: 1.0
+  IMS_PER_BATCH: 32
+  MAX_EPOCH: 60
+  MOMENTUM: 0.9
+  NESTEROV: False
+  OPT: Adam
+  SCHED: MultiStepLR
+  STEPS: [25, 45]
+  WARMUP_FACTOR: 0.1
+  WARMUP_ITERS: 500
+  WARMUP_METHOD: linear
+  WEIGHT_DECAY: 0.0005
+  WEIGHT_DECAY_BIAS: 0.0005
+  WEIGHT_DECAY_NORM: 0.0005
+TEST:
+  AQE:
+    ALPHA: 3.0
+    ENABLED: False
+    QE_K: 5
+    QE_TIME: 1
+  EVAL_PERIOD: 5
+  FLIP:
+    ENABLED: False
+  IMS_PER_BATCH: 128
+  METRIC: cosine
+  PRECISE_BN:
+    DATASET: Market1501
+    ENABLED: False
+    NUM_ITER: 300
+  RERANK:
+    ENABLED: False
+    K1: 20
+    K2: 6
+    LAMBDA: 0.3
+  ROC:
+    ENABLED: False
+[10/03 04:01:47 fastreid]: Full config saved to /kaggle/working/result/bot_train/config.yaml
+[10/03 04:01:47 fastreid.utils.env]: Using a generated random seed 47836903
+[10/03 04:01:47 fastreid.engine.defaults]: Prepare training set
+[10/03 04:08:57 fastreid.data.datasets.bases]: => Loaded MEVID_Mini in csv format: 
+| subset   | # ids   | # images   | # cameras   |
+|:---------|:--------|:-----------|:------------|
+| train    | 104     | 182001     | 22          |
+[10/03 04:08:57 fastreid.data.build]: Using training sampler BalancedIdentitySampler
+[10/03 04:08:57 fastreid.engine.defaults]: Auto-scaling the num_classes=104
+[10/03 04:08:57 fastreid.engine.defaults]: Model:
+Baseline(
+  (backbone): ResNet(
+    (conv1): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    (bn1): BatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (relu): ReLU(inplace=True)
+    (maxpool): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=True)
+    (layer1): Sequential(
+      (0): Bottleneck(
+        (conv1): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+        (downsample): Sequential(
+          (0): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          (1): BatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): Bottleneck(
+        (conv1): Conv2d(256, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+      (2): Bottleneck(
+        (conv1): Conv2d(256, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+    )
+    (layer2): Sequential(
+      (0): Bottleneck(
+        (conv1): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+        (downsample): Sequential(
+          (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): Bottleneck(
+        (conv1): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+      (2): Bottleneck(
+        (conv1): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+      (3): Bottleneck(
+        (conv1): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+    )
+    (layer3): Sequential(
+      (0): Bottleneck(
+        (conv1): Conv2d(512, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+        (downsample): Sequential(
+          (0): Conv2d(512, 1024, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+      (2): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+      (3): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+      (4): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+      (5): Bottleneck(
+        (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): IBN(
+          (IN): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=False)
+          (BN): BatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+    )
+    (layer4): Sequential(
+      (0): Bottleneck(
+        (conv1): Conv2d(1024, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+        (downsample): Sequential(
+          (0): Conv2d(1024, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          (1): BatchNorm(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): Bottleneck(
+        (conv1): Conv2d(2048, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+      (2): Bottleneck(
+        (conv1): Conv2d(2048, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn1): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv3): Conv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn3): BatchNorm(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (se): Identity()
+      )
+    )
+  )
+  (heads): EmbeddingHead(
+    (pool_layer): GlobalAvgPool(output_size=1)
+    (bottleneck): Sequential(
+      (0): BatchNorm(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (cls_layer): Linear(num_classes=104, scale=1, margin=0.0)
+  )
+)
+/kaggle/working/MultiCameraTracking/fastreid/data/transforms/functional.py:46: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  img = torch.ByteTensor(torch.ByteStorage.from_buffer(pic.tobytes()))
+/kaggle/working/MultiCameraTracking/fastreid/data/transforms/functional.py:46: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  img = torch.ByteTensor(torch.ByteStorage.from_buffer(pic.tobytes()))
+[10/03 04:08:58 fastreid.utils.checkpoint]: Loading checkpoint from /kaggle/working/msmt_bot_R50-ibn.pth
+[10/03 04:08:59 fastreid.utils.checkpoint]: Some model parameters or buffers are not found in the checkpoint:
+  heads.weight
+  heads.bottleneck.0.{weight, running_var, bias, running_mean}
+[10/03 04:08:59 fastreid.utils.checkpoint]: The checkpoint state_dict contains keys that are not used by the model:
+  pixel_mean
+  pixel_std
+  heads.bnneck.{weight, bias, running_mean, running_var, num_batches_tracked}
+  heads.classifier.weight
+[10/03 04:08:59 fastreid.engine.train_loop]: Starting training from epoch 0
+[10/03 04:08:59 fastreid.engine.hooks]: Freeze layer group "backbone" training for 200 iterations
+[10/03 04:10:17 fastreid.utils.events]:  eta: 1 day, 12:32:40  epoch/iter: 0/199  total_loss: 5.529  loss_cls: 4.757  loss_triplet: 0.7697  time: 0.3876  data_time: 0.0046  lr: 4.58e-04  max_mem: 2215M
+[10/03 04:10:17 fastreid.engine.hooks]: Open layer group "backbone" training
+[10/03 04:11:45 fastreid.utils.events]:  eta: 1 day, 16:05:12  epoch/iter: 0/399  total_loss: 5.504  loss_cls: 4.756  loss_triplet: 0.7547  time: 0.4135  data_time: 0.0039  lr: 8.18e-04  max_mem: 2215M
+[10/03 04:13:13 fastreid.utils.events]:  eta: 1 day, 16:56:27  epoch/iter: 0/599  total_loss: 5.489  loss_cls: 4.753  loss_triplet: 0.745  time: 0.4217  data_time: 0.0043  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:14:40 fastreid.utils.events]:  eta: 1 day, 17:08:47  epoch/iter: 0/799  total_loss: 5.51  loss_cls: 4.763  loss_triplet: 0.7537  time: 0.4256  data_time: 0.0038  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:16:08 fastreid.utils.events]:  eta: 1 day, 17:13:14  epoch/iter: 0/999  total_loss: 5.504  loss_cls: 4.743  loss_triplet: 0.7541  time: 0.4279  data_time: 0.0039  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:17:35 fastreid.utils.events]:  eta: 1 day, 17:19:48  epoch/iter: 0/1199  total_loss: 5.5  loss_cls: 4.745  loss_triplet: 0.7489  time: 0.4296  data_time: 0.0045  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:19:02 fastreid.utils.events]:  eta: 1 day, 17:17:38  epoch/iter: 0/1399  total_loss: 5.499  loss_cls: 4.745  loss_triplet: 0.7531  time: 0.4306  data_time: 0.0043  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:20:30 fastreid.utils.events]:  eta: 1 day, 17:15:10  epoch/iter: 0/1599  total_loss: 5.493  loss_cls: 4.743  loss_triplet: 0.7503  time: 0.4313  data_time: 0.0038  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:21:57 fastreid.utils.events]:  eta: 1 day, 17:13:54  epoch/iter: 0/1799  total_loss: 5.504  loss_cls: 4.745  loss_triplet: 0.7565  time: 0.4320  data_time: 0.0043  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:23:25 fastreid.utils.events]:  eta: 1 day, 17:12:08  epoch/iter: 0/1999  total_loss: 5.515  loss_cls: 4.752  loss_triplet: 0.747  time: 0.4325  data_time: 0.0041  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:24:52 fastreid.utils.events]:  eta: 1 day, 17:09:18  epoch/iter: 0/2199  total_loss: 5.506  loss_cls: 4.747  loss_triplet: 0.7556  time: 0.4328  data_time: 0.0040  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:26:19 fastreid.utils.events]:  eta: 1 day, 17:09:13  epoch/iter: 0/2399  total_loss: 5.498  loss_cls: 4.752  loss_triplet: 0.7467  time: 0.4333  data_time: 0.0041  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:27:47 fastreid.utils.events]:  eta: 1 day, 17:09:08  epoch/iter: 0/2599  total_loss: 5.495  loss_cls: 4.737  loss_triplet: 0.7493  time: 0.4336  data_time: 0.0039  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:29:14 fastreid.utils.events]:  eta: 1 day, 17:06:32  epoch/iter: 0/2799  total_loss: 5.501  loss_cls: 4.753  loss_triplet: 0.7537  time: 0.4338  data_time: 0.0040  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:30:42 fastreid.utils.events]:  eta: 1 day, 17:05:20  epoch/iter: 0/2999  total_loss: 5.503  loss_cls: 4.751  loss_triplet: 0.7513  time: 0.4340  data_time: 0.0039  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:32:09 fastreid.utils.events]:  eta: 1 day, 17:05:05  epoch/iter: 0/3199  total_loss: 5.506  loss_cls: 4.755  loss_triplet: 0.7567  time: 0.4342  data_time: 0.0043  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:33:37 fastreid.utils.events]:  eta: 1 day, 17:02:15  epoch/iter: 0/3399  total_loss: 5.49  loss_cls: 4.743  loss_triplet: 0.7495  time: 0.4344  data_time: 0.0039  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:35:04 fastreid.utils.events]:  eta: 1 day, 16:59:18  epoch/iter: 0/3599  total_loss: 5.514  loss_cls: 4.751  loss_triplet: 0.7491  time: 0.4345  data_time: 0.0040  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:36:31 fastreid.utils.events]:  eta: 1 day, 16:58:01  epoch/iter: 0/3799  total_loss: 5.485  loss_cls: 4.742  loss_triplet: 0.7487  time: 0.4346  data_time: 0.0042  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:37:59 fastreid.utils.events]:  eta: 1 day, 16:57:00  epoch/iter: 0/3999  total_loss: 5.498  loss_cls: 4.746  loss_triplet: 0.7493  time: 0.4347  data_time: 0.0038  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:39:26 fastreid.utils.events]:  eta: 1 day, 16:54:51  epoch/iter: 0/4199  total_loss: 5.499  loss_cls: 4.74  loss_triplet: 0.7509  time: 0.4349  data_time: 0.0041  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:40:53 fastreid.utils.events]:  eta: 1 day, 16:53:10  epoch/iter: 0/4399  total_loss: 5.501  loss_cls: 4.751  loss_triplet: 0.7564  time: 0.4349  data_time: 0.0043  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:42:21 fastreid.utils.events]:  eta: 1 day, 16:52:59  epoch/iter: 0/4599  total_loss: 5.504  loss_cls: 4.744  loss_triplet: 0.7481  time: 0.4350  data_time: 0.0041  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:43:48 fastreid.utils.events]:  eta: 1 day, 16:52:48  epoch/iter: 0/4799  total_loss: 5.51  loss_cls: 4.756  loss_triplet: 0.7523  time: 0.4351  data_time: 0.0040  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:45:16 fastreid.utils.events]:  eta: 1 day, 16:49:53  epoch/iter: 0/4999  total_loss: 5.508  loss_cls: 4.756  loss_triplet: 0.7456  time: 0.4352  data_time: 0.0040  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:46:43 fastreid.utils.events]:  eta: 1 day, 16:47:52  epoch/iter: 0/5199  total_loss: 5.496  loss_cls: 4.75  loss_triplet: 0.7502  time: 0.4352  data_time: 0.0041  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:48:11 fastreid.utils.events]:  eta: 1 day, 16:48:33  epoch/iter: 0/5399  total_loss: 5.491  loss_cls: 4.746  loss_triplet: 0.7442  time: 0.4353  data_time: 0.0043  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:49:38 fastreid.utils.events]:  eta: 1 day, 16:46:51  epoch/iter: 0/5599  total_loss: 5.509  loss_cls: 4.762  loss_triplet: 0.7516  time: 0.4354  data_time: 0.0043  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:50:16 fastreid.utils.checkpoint]: Saving checkpoint to /kaggle/working/result/bot_train/model_0000.pth
+[10/03 04:50:16 fastreid.utils.events]:  eta: 1 day, 16:45:37  epoch/iter: 0/5686  total_loss: 5.507  loss_cls: 4.763  loss_triplet: 0.7525  time: 0.4354  data_time: 0.0045  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:51:06 fastreid.utils.events]:  eta: 1 day, 16:44:02  epoch/iter: 1/5799  total_loss: 5.504  loss_cls: 4.747  loss_triplet: 0.7463  time: 0.4354  data_time: 0.0035  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:52:33 fastreid.utils.events]:  eta: 1 day, 16:44:06  epoch/iter: 1/5999  total_loss: 5.48  loss_cls: 4.736  loss_triplet: 0.7414  time: 0.4355  data_time: 0.0041  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:55:28 fastreid.utils.events]:  eta: 1 day, 16:41:29  epoch/iter: 1/6399  total_loss: 5.507  loss_cls: 4.757  loss_triplet: 0.7419  time: 0.4356  data_time: 0.0045  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:56:56 fastreid.utils.events]:  eta: 1 day, 16:39:14  epoch/iter: 1/6599  total_loss: 5.497  loss_cls: 4.744  loss_triplet: 0.7547  time: 0.4357  data_time: 0.0038  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:58:23 fastreid.utils.events]:  eta: 1 day, 16:38:14  epoch/iter: 1/6799  total_loss: 5.491  loss_cls: 4.743  loss_triplet: 0.7478  time: 0.4357  data_time: 0.0040  lr: 1.00e-03  max_mem: 2215M
+[10/03 04:59:51 fastreid.utils.events]:  eta: 1 day, 16:37:12  epoch/iter: 1/6999  total_loss: 5.495  loss_cls: 4.748  loss_triplet: 0.7459  time: 0.4358  data_time: 0.0039  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:01:18 fastreid.utils.events]:  eta: 1 day, 16:35:02  epoch/iter: 1/7199  total_loss: 5.486  loss_cls: 4.753  loss_triplet: 0.749  time: 0.4358  data_time: 0.0041  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:02:45 fastreid.utils.events]:  eta: 1 day, 16:31:51  epoch/iter: 1/7399  total_loss: 5.498  loss_cls: 4.754  loss_triplet: 0.7532  time: 0.4358  data_time: 0.0039  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:04:13 fastreid.utils.events]:  eta: 1 day, 16:31:33  epoch/iter: 1/7599  total_loss: 5.492  loss_cls: 4.737  loss_triplet: 0.7527  time: 0.4359  data_time: 0.0038  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:05:40 fastreid.utils.events]:  eta: 1 day, 16:30:36  epoch/iter: 1/7799  total_loss: 5.491  loss_cls: 4.748  loss_triplet: 0.7501  time: 0.4359  data_time: 0.0044  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:07:08 fastreid.utils.events]:  eta: 1 day, 16:27:28  epoch/iter: 1/7999  total_loss: 5.503  loss_cls: 4.755  loss_triplet: 0.7507  time: 0.4359  data_time: 0.0039  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:08:35 fastreid.utils.events]:  eta: 1 day, 16:27:43  epoch/iter: 1/8199  total_loss: 5.488  loss_cls: 4.742  loss_triplet: 0.7499  time: 0.4360  data_time: 0.0041  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:10:02 fastreid.utils.events]:  eta: 1 day, 16:26:55  epoch/iter: 1/8399  total_loss: 5.485  loss_cls: 4.747  loss_triplet: 0.7376  time: 0.4360  data_time: 0.0045  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:11:30 fastreid.utils.events]:  eta: 1 day, 16:24:05  epoch/iter: 1/8599  total_loss: 5.486  loss_cls: 4.737  loss_triplet: 0.7477  time: 0.4360  data_time: 0.0038  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:12:57 fastreid.utils.events]:  eta: 1 day, 16:23:03  epoch/iter: 1/8799  total_loss: 5.5  loss_cls: 4.757  loss_triplet: 0.7547  time: 0.4360  data_time: 0.0042  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:14:25 fastreid.utils.events]:  eta: 1 day, 16:23:16  epoch/iter: 1/8999  total_loss: 5.481  loss_cls: 4.732  loss_triplet: 0.7536  time: 0.4361  data_time: 0.0039  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:15:52 fastreid.utils.events]:  eta: 1 day, 16:20:01  epoch/iter: 1/9199  total_loss: 5.51  loss_cls: 4.744  loss_triplet: 0.7582  time: 0.4361  data_time: 0.0043  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:17:20 fastreid.utils.events]:  eta: 1 day, 16:19:14  epoch/iter: 1/9399  total_loss: 5.494  loss_cls: 4.749  loss_triplet: 0.7542  time: 0.4361  data_time: 0.0042  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:18:47 fastreid.utils.events]:  eta: 1 day, 16:18:16  epoch/iter: 1/9599  total_loss: 5.509  loss_cls: 4.754  loss_triplet: 0.7585  time: 0.4361  data_time: 0.0040  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:20:15 fastreid.utils.events]:  eta: 1 day, 16:16:01  epoch/iter: 1/9799  total_loss: 5.5  loss_cls: 4.749  loss_triplet: 0.7469  time: 0.4362  data_time: 0.0040  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:23:10 fastreid.utils.events]:  eta: 1 day, 16:13:13  epoch/iter: 1/10199  total_loss: 5.495  loss_cls: 4.74  loss_triplet: 0.7436  time: 0.4362  data_time: 0.0041  lr: 1.00e-03  max_mem: 2215M
+[10/03 05:24:37 fastreid.utils.events]:  eta: 1 day, 16:11:08  epoch/iter: 1/10399  total_loss: 5.495  loss_cls: 4.754  loss_triplet: 0.7514  time: 0.4362  data_time: 0.0041  lr: 1.00e-03  max_mem: 2215M

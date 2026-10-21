@@ -1,0 +1,12 @@
+python scripts/train.py \
+    --config configs/mevid_agw_r50_ibn.yml \
+    DATASETS.NAMES "('MEVID_Mini',)" \
+    DATASETS.TESTS "('MEVID_Mini',)" \
+    SOLVER.IMS_PER_BATCH 32 \
+    SOLVER.BASE_LR 0.001 \
+    SOLVER.FREEZE_ITERS 200 \
+    SOLVER.MAX_EPOCH 60 \
+    SOLVER.CHECKPOINT_PERIOD 1 \
+    TEST.EVAL_PERIOD 5 \
+    MODEL.WEIGHTS "/kaggle/working/msmt_agw_R50-ibn.pth" \
+    OUTPUT_DIR "/kaggle/working/result/agw_train"
