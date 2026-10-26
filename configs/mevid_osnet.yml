@@ -1,26 +1,84 @@
 _BASE_: "Base-bagtricks.yml"
 
-DATASETS:
-  NAMES: ("MEVID",)
-  TESTS: ("MEVID",)
+  NAMES: ["MEVID_OSNet"]
+  TESTS: ["MEVID_OSNet"]
 
 MODEL:
+  META_ARCHITECTURE: "OSNetMGN"
+  DEVICE: "cuda"
+  WEIGHTS: ""
   BACKBONE:
     NAME: "build_osnet_backbone"
     DEPTH: "x1_0"
     FEAT_DIM: 512
-    PRETRAIN: True
+    PRETRAIN: false
+    PRETRAIN_PATH: ""
+    WITH_IBN: false
+  # The global head keeps the old healthy architecture; local heads are defined in the notebook.
   HEADS:
-    EMBEDDING_DIM: 512
+    NAME: "EmbeddingHead"
+    POOL_LAYER: "GlobalAvgPool"
+    EMBEDDING_DIM: 0
+    WITH_BNNECK: true
+    NORM: "BN"
+    NECK_FEAT: "before"
+    CLS_LAYER: "Linear"
+  MGN:
+    # Lightweight MGN-style head on ONE shared OSNet map; not original ResNet-MGN.
+    PARTS: [2, 3]
+    PART_DIM: 256
+    LOCAL_CE_WEIGHT: 1.0
+    PART_TRIPLET_WEIGHT: 1.0
+    INFERENCE_GROUP_WEIGHTS: [1.0, 1.0, 1.0]
+    HEAD_WARMUP_EPOCHS: 1
+  LOSSES:
+    NAME: ("CrossEntropyLoss", "TripletLoss")
+    CE:
+      EPSILON: 0.1
+      SCALE: 1.0
+    TRI:
+      MARGIN: 0.3
+      HARD_MINING: true
+      NORM_FEAT: true
+      SCALE: 1.0
+
+DATALOADER:
+  NUM_WORKERS: 4
+  NUM_INSTANCE: 4
+  SAMPLER_TRAIN: "BalancedIdentitySampler"
 
 SOLVER:
-  MAX_EPOCH: 120
-  BASE_LR: 0.003
-  OPT: "SGD"
-  IMS_PER_BATCH: 128
-  CHECKPOINT_PERIOD: 2
+  OPT: "AdamW"
+  AMP:
+    ENABLED: false
+  # Keep the original optimizer/schedule settings for exact state restoration.
+  # The current LR is loaded from the checkpoint; extending epochs does not reset it.
+  BASE_LR: 0.00001
+  HEADS_LR_FACTOR: 10.0
+  WEIGHT_DECAY: 0.0005
+  WEIGHT_DECAY_NORM: 0.0
+  WEIGHT_DECAY_BIAS: 0.0
+  MAX_EPOCH: 30
+  IMS_PER_BATCH: 16
+  SCHED: "MultiStepLR"
+  STEPS: [7, 9]  # Preserve the already-used milestones when resuming.
+  GAMMA: 0.1
+  WARMUP_ITERS: 500
+  CHECKPOINT_PERIOD: 5
+  CLIP_GRADIENTS:
+    ENABLED: true
+    CLIP_TYPE: "norm"
+    CLIP_VALUE: 5.0
+    NORM_TYPE: 2.0
 
 TEST:
-  EVAL_PERIOD: 2
+  # The explicit epoch loop validates each stage epoch. Disable the duplicate native hook.
+  EVAL_PERIOD: 0
+  IMS_PER_BATCH: 64
+  METRIC: "cosine"
+  AQE:
+    ENABLED: false
+  RERANK:
+    ENABLED: false
 
-OUTPUT_DIR: "results/osnet"
+OUTPUT_DIR: "/kaggle/working/result_mgn"
